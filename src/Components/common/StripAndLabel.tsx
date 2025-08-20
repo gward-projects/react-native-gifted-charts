@@ -5,7 +5,7 @@ import {
   getTopAndLeftForStripAndLabel,
 } from 'gifted-charts-core';
 
-export const StripAndLabel = (props: StripAndLabelProps & {containerHeightIncludingBelowXAxis: number}) => {
+export const StripAndLabel = (props: StripAndLabelProps & {svgHeight: number}) => {
   const {
     pointerX,
     pointerLabelWidth,
@@ -17,8 +17,6 @@ export const StripAndLabel = (props: StripAndLabelProps & {containerHeightInclud
     pointerItemLocal,
     showPointerStrip,
     pointerStripWidth,
-    containerHeight,
-    containerHeightIncludingBelowXAxis,
     xAxisThickness,
     pointerStripColor,
     pointerConfig,
@@ -34,6 +32,7 @@ export const StripAndLabel = (props: StripAndLabelProps & {containerHeightInclud
     horizontalStripConfig,
     screenWidth,
     width,
+    svgHeight,
   } = props;
 
   const {top, left} = getTopAndLeftForStripAndLabel(props);
@@ -58,7 +57,7 @@ export const StripAndLabel = (props: StripAndLabelProps & {containerHeightInclud
             top: containsNegative ? 0 : -pointerYLocal + 8 + xAxisThickness,
             width,
             // hauteur identique à la zone SVG (inclut la zone sous l’axe X)
-            height: containerHeightIncludingBelowXAxis,
+            height: svgHeight,
           }}>
           <Svg>
             <Line
@@ -79,7 +78,7 @@ export const StripAndLabel = (props: StripAndLabelProps & {containerHeightInclud
               y1={
                 pointerStripUptoDataPoint
                   ? pointerYLocal + pointerRadius - 4
-                  : containerHeightIncludingBelowXAxis - pointerStripHeight
+                  : svgHeight - pointerStripHeight
               }
               x2={
                 pointerX +
@@ -88,7 +87,7 @@ export const StripAndLabel = (props: StripAndLabelProps & {containerHeightInclud
                 pointerStripWidth / 2 +
                 (pointerItemLocal[0]?.pointerShiftX || 0)
               }
-              y2={containerHeightIncludingBelowXAxis}
+              y2={svgHeight + (Platform.OS === 'web' ? 1 : 0)} // +1px anti-arrondi sur Web
             />
             {horizontalStripConfig && (
               <Line
@@ -149,7 +148,7 @@ export const StripAndLabel = (props: StripAndLabelProps & {containerHeightInclud
               top: top,
               marginTop: pointerStripUptoDataPoint
                 ? 0
-                : containerHeight - pointerStripHeight,
+                : svgHeight - pointerStripHeight,
               width: pointerLabelWidth,
             },
           ]}>
