@@ -56,9 +56,7 @@ export const StripAndLabel = (props: StripAndLabelProps) => {
             left: -pointerStripWidth / 4,
             top: containsNegative ? 0 : -pointerYLocal + 8 + xAxisThickness,
             width,
-            height: Platform.OS === 'web'
-                ? containerHeight + xAxisThickness + 8
-                : containerHeight,
+            height: Platform.OS === 'web' ? containerHeight + xAxisThickness : containerHeight,
           }}>
           <Svg>
             <Line
@@ -88,10 +86,7 @@ export const StripAndLabel = (props: StripAndLabelProps) => {
                 pointerStripWidth / 2 +
                 (pointerItemLocal[0]?.pointerShiftX || 0)
               }
-              y2={Platform.OS === 'web'
-                  ? containerHeight + xAxisThickness + 8
-                  : containerHeight
-              }
+              y2={Platform.OS === 'web' ? containerHeight + xAxisThickness : containerHeight}
             />
             {horizontalStripConfig && (
               <Line
