@@ -39,26 +39,32 @@ export const StripAndLabel = (
     if (isNaN(top)) return null;
 
 
-    // Use chart height (container + axis) on Web to avoid including the extra
-    // bottom padding (svgHeight). Keep svgHeight on native (Android/iOS).
     const isWeb = Platform.OS === 'web';
     const chartH = (containerHeight ?? 0);
-    const axisH = (xAxisThickness ?? 0);
+    const axisH  = (xAxisThickness ?? 0);
 
-    // Hauteur du SVG : zone chart + axe
-    const h = isWeb
-        ? chartH + axisH
+    // Hauteur svg
+    const h = isWeb ? chartH + axisH
         : Math.round((svgHeight ?? 0) || (chartH + axisH));
 
-    // Snap demi-pixel pour les largeurs impaires (Web)
-    const halfPixelFix = isWeb && (pointerStripWidth % 2 === 1) ? 0.5 : 0;
+    // Helpers de snap (netteté) :
+    const isOdd = (n: number) => Math.round(n) % 2 === 1;
+    const snapY = (y: number, strokeW: number) =>
+        isWeb && isOdd(strokeW) ? y - 0.5 : y;
+    const snapX = (x: number, strokeW: number) =>
+        isWeb && isOdd(strokeW) ? x - 0.5 : x;
 
-    // Y exact de l’axe: bas du SVG - moitié de l’axe
-    // (robuste: marche si svgHeight a du padding sur Android)
-    const axisY = h - axisH / 2 - halfPixelFix;
+    // Centre EXACT de l’axe X (aligne-toi sur la parité de l’axe, pas de la barre)
+    const axisCenterY = snapY(chartH + axisH / 2, axisH);
 
     // Départ si pas "upto datapoint"
-    const y1Base = Math.max(0, axisY - (pointerStripHeight ?? 0));
+    const y1Base = Math.max(0, axisCenterY - (pointerStripHeight ?? 0));
+
+    // X de la barre (snap pour netteté selon la parité de la barre)
+    const lineX = snapX(
+        pointerX + pointerRadius + 2 + (pointerItemLocal[0]?.pointerShiftX || 0),
+        pointerStripWidth
+    );
 
     return (
         <View style={{position: 'absolute', top: pointerYLocal}}>
@@ -78,20 +84,10 @@ export const StripAndLabel = (
                             stroke={pointerStripColor}
                             strokeWidth={pointerStripWidth}
                             strokeDasharray={pointerConfig?.strokeDashArray || ''}
-                            x1={
-                                pointerX + pointerRadius + 2 - pointerStripWidth / 2 +
-                                (pointerItemLocal[0]?.pointerShiftX || 0)
-                            }
-                            y1={
-                                pointerStripUptoDataPoint
-                                    ? pointerYLocal + pointerRadius - 4
-                                    : y1Base
-                            }
-                            x2={
-                                pointerX + pointerRadius + 2 - pointerStripWidth / 2 +
-                                (pointerItemLocal[0]?.pointerShiftX || 0)
-                            }
-                            y2={axisY}
+                            x1={lineX}
+                            y1={pointerStripUptoDataPoint ? pointerYLocal + pointerRadius - 4 : y1Base}
+                            x2={lineX}
+                            y2={axisCenterY}
                             strokeLinecap="butt"
                         />
                         {horizontalStripConfig && (
