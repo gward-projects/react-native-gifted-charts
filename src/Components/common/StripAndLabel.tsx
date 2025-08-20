@@ -54,12 +54,12 @@ export const StripAndLabel = (props: StripAndLabelProps & {svgHeight: number}) =
           style={{
             position: 'absolute',
             left: -pointerStripWidth / 4,
-            top: containsNegative ? 0 : -pointerYLocal + 8 + xAxisThickness,
+            top: containsNegative ? 0 : -pointerYLocal + xAxisThickness,
             width,
             // hauteur identique à la zone SVG (inclut la zone sous l’axe X)
             height: svgHeight,
           }}>
-          <Svg>
+          <Svg height={svgHeight} width={width}>
             <Line
               stroke={pointerStripColor}
               strokeWidth={pointerStripWidth}
@@ -75,11 +75,7 @@ export const StripAndLabel = (props: StripAndLabelProps & {svgHeight: number}) =
                 pointerStripWidth / 2 +
                 (pointerItemLocal[0]?.pointerShiftX || 0)
               }
-              y1={
-                pointerStripUptoDataPoint
-                  ? pointerYLocal + pointerRadius - 4
-                  : svgHeight - pointerStripHeight
-              }
+              y1={ pointerStripUptoDataPoint ? (pointerYLocal + pointerRadius - 4) : Math.max(0, svgHeight - pointerStripHeight) }
               x2={
                 pointerX +
                 pointerRadius +
@@ -87,7 +83,7 @@ export const StripAndLabel = (props: StripAndLabelProps & {svgHeight: number}) =
                 pointerStripWidth / 2 +
                 (pointerItemLocal[0]?.pointerShiftX || 0)
               }
-              y2={svgHeight + (Platform.OS === 'web' ? 1 : 0)} // +1px anti-arrondi sur Web
+              y2={svgHeight}
             />
             {horizontalStripConfig && (
               <Line
@@ -146,9 +142,7 @@ export const StripAndLabel = (props: StripAndLabelProps & {svgHeight: number}) =
               position: 'absolute',
               left: left + pointerX,
               top: top,
-              marginTop: pointerStripUptoDataPoint
-                ? 0
-                : svgHeight - pointerStripHeight,
+              marginTop: pointerStripUptoDataPoint ? 0 : Math.max(0, svgHeight - pointerStripHeight),
               width: pointerLabelWidth,
             },
           ]}>
