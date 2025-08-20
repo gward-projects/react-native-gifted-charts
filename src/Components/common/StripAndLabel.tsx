@@ -38,13 +38,19 @@ export const StripAndLabel = (props: StripAndLabelProps & {svgHeight: number}) =
 
   const {top, left} = getTopAndLeftForStripAndLabel(props);
 
-  if (isNaN(top) || typeof top !== 'number') return null;
+  if (isNaN(top)) return null;
 
+  // 1) calcule une hauteur entière
+  const baseHeight = Math.floor(svgHeight ?? containerHeight);
+
+// 2) demi-pixel fix + léger nudge web
   const isWeb = Platform.OS === 'web';
   const halfPixelFix = isWeb && (pointerStripWidth % 2 === 1) ? 0.5 : 0;
 
-  const bottomY =
-      (svgHeight ?? containerHeight) - (pointerStripWidth / 2) - halfPixelFix;
+// <- remplace bottomY par ceci
+  const bottomY = baseHeight - (pointerStripWidth / 2) - halfPixelFix - (isWeb ? 0.5 : 0);
+
+// idem pour le label (cohérent avec y1Base)
   const y1Base = Math.max(0, bottomY - pointerStripHeight);
 
   return (
