@@ -2721,8 +2721,7 @@ export const LineChart = (props: LineChartPropsType) => {
               position: 'absolute',
               height:
                 extendedContainerHeight + noOfSectionsBelowXAxis * stepHeight,
-              bottom:
-                58 + labelsExtraHeight + xAxisLabelsVerticalShift - overflowTop,
+              bottom: 61 + labelsExtraHeight + xAxisLabelsVerticalShift - xAxisThickness - overflowTop,
               // width: totalWidth,
               zIndex: 20,
             }}>

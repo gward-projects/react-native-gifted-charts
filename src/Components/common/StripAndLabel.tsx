@@ -1,4 +1,4 @@
-import {View} from 'react-native';
+import {Platform, View} from 'react-native';
 import Svg, {Line} from 'react-native-svg';
 import {
   StripAndLabelProps,
@@ -56,7 +56,9 @@ export const StripAndLabel = (props: StripAndLabelProps) => {
             left: -pointerStripWidth / 4,
             top: containsNegative ? 0 : -pointerYLocal + 8 + xAxisThickness,
             width,
-            height: containerHeight,
+            height: Platform.OS === 'web'
+                ? containerHeight + xAxisThickness + 8
+                : containerHeight,
           }}>
           <Svg>
             <Line
@@ -86,7 +88,10 @@ export const StripAndLabel = (props: StripAndLabelProps) => {
                 pointerStripWidth / 2 +
                 (pointerItemLocal[0]?.pointerShiftX || 0)
               }
-              y2={containerHeight}
+              y2={Platform.OS === 'web'
+                  ? containerHeight + xAxisThickness + 8
+                  : containerHeight
+              }
             />
             {horizontalStripConfig && (
               <Line
