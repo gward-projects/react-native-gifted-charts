@@ -183,6 +183,7 @@ export const BarChart = (props: BarChartPropsType) => {
       width: totalWidth,
       screenWidth,
       containsNegative: false,
+      containerHeightIncludingBelowXAxis
     });
   };
 
