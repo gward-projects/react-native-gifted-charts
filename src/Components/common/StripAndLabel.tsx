@@ -41,21 +41,22 @@ export const StripAndLabel = (
     // Hauteur de dessin = zone chart + trait d'axe X
     const drawHeight = (containerHeight ?? 0) + (xAxisThickness ?? 0);
 
-    // Snap demi-pixel si épaisseur impaire (spécifique web)
     const isWeb = Platform.OS === 'web';
     const halfPixelFix = isWeb && (pointerStripWidth % 2 === 1) ? 0.5 : 0;
 
-    // Micro ajustement en fonction du DPR (≈ 0.5–1px)
-    const dpr =
-        isWeb && typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+    // micro-ajustement web (DPR) + nudge global (vers le BAS)
+    const dpr = isWeb && typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
     const webNudge = isWeb ? 1 / dpr : 0;
+    const bottomNudge = (props as any).pointerBottomNudge ?? -0.5; // <-- clé
 
-    // Y bas du trait (arrive pile sur l’axe)
-    const bottomY =
-        drawHeight - pointerStripWidth / 2 - halfPixelFix + webNudge;
+    // Y bas du trait (arrive pile sur l’axe ou le dépasse très légèrement vers le bas)
+    const bottomY = (containerHeight ?? 0) + (xAxisThickness ?? 0)
+        - pointerStripWidth / 2
+        - halfPixelFix
+        + webNudge
+        + bottomNudge;
 
     const y1Base = Math.max(0, bottomY - (pointerStripHeight ?? 0));
-
     return (
         <View style={{position: 'absolute', top: pointerYLocal}}>
             {(isBarChart ? showPointerStrip && !pointerLabelComponent : showPointerStrip) ? (
