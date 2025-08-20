@@ -38,25 +38,21 @@ export const StripAndLabel = (
     const {top, left} = getTopAndLeftForStripAndLabel(props);
     if (isNaN(top)) return null;
 
-    // Hauteur de dessin = zone chart + trait d'axe X
-    const drawHeight = (containerHeight ?? 0) + (xAxisThickness ?? 0);
+    const h =
+        Math.round(
+            (svgHeight ?? 0) ||
+            ((containerHeight ?? 0) + (xAxisThickness ?? 0))
+        );
 
+    // 2) demi-pixel pour les épaisseurs impaires + nudge fin vers le BAS
     const isWeb = Platform.OS === 'web';
     const halfPixelFix = isWeb && (pointerStripWidth % 2 === 1) ? 0.5 : 0;
+    const nudgeDown = 0.8; // ajuste 0.5–1.2 selon rendu
 
-    // micro-ajustement web (DPR) + nudge global (vers le BAS)
-    const dpr = isWeb && typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
-    const webNudge = isWeb ? 1 / dpr : 0;
-    const bottomNudge = (props as any).pointerBottomNudge ?? -0.5; // <-- clé
-
-    // Y bas du trait (arrive pile sur l’axe ou le dépasse très légèrement vers le bas)
-    const bottomY = (containerHeight ?? 0) + (xAxisThickness ?? 0)
-        - pointerStripWidth / 2
-        - halfPixelFix
-        + webNudge
-        + bottomNudge;
-
+    // 3) bottomY cohérent avec h
+    const bottomY = h - pointerStripWidth / 2 - halfPixelFix + nudgeDown;
     const y1Base = Math.max(0, bottomY - (pointerStripHeight ?? 0));
+
     return (
         <View style={{position: 'absolute', top: pointerYLocal}}>
             {(isBarChart ? showPointerStrip && !pointerLabelComponent : showPointerStrip) ? (
@@ -66,11 +62,11 @@ export const StripAndLabel = (
                         left: -pointerStripWidth / 4,
                         top: containsNegative ? 0 : -pointerYLocal + xAxisThickness,
                         width,
-                        height: drawHeight, // <= identique au SVG juste dessous
+                        height: h, // <= identique au SVG juste dessous
                     }}
                 >
                     {/* IMPORTANT: même hauteur que le conteneur ci-dessus */}
-                    <Svg height={drawHeight} width={width}>
+                    <Svg height={h} width={width}>
                         <Line
                             stroke={pointerStripColor}
                             strokeWidth={pointerStripWidth}
