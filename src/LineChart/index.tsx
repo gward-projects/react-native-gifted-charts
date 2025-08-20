@@ -1108,6 +1108,7 @@ export const LineChart = (props: LineChartPropsType) => {
       hasDataSet: !!dataSet,
       containsNegative: mostNegativeValue < 0,
       horizontalStripConfig: pointerConfig?.horizontalStripConfig,
+      containerHeightIncludingBelowXAxis,
     });
   };
 

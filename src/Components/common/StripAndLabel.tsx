@@ -5,7 +5,7 @@ import {
   getTopAndLeftForStripAndLabel,
 } from 'gifted-charts-core';
 
-export const StripAndLabel = (props: StripAndLabelProps) => {
+export const StripAndLabel = (props: StripAndLabelProps & {containerHeightIncludingBelowXAxis: number}) => {
   const {
     pointerX,
     pointerLabelWidth,
@@ -18,6 +18,7 @@ export const StripAndLabel = (props: StripAndLabelProps) => {
     showPointerStrip,
     pointerStripWidth,
     containerHeight,
+    containerHeightIncludingBelowXAxis,
     xAxisThickness,
     pointerStripColor,
     pointerConfig,
@@ -56,7 +57,8 @@ export const StripAndLabel = (props: StripAndLabelProps) => {
             left: -pointerStripWidth / 4,
             top: containsNegative ? 0 : -pointerYLocal + 8 + xAxisThickness,
             width,
-            height: Platform.OS === 'web' ? containerHeight + xAxisThickness : containerHeight,
+            // hauteur identique à la zone SVG (inclut la zone sous l’axe X)
+            height: containerHeightIncludingBelowXAxis,
           }}>
           <Svg>
             <Line
@@ -77,7 +79,7 @@ export const StripAndLabel = (props: StripAndLabelProps) => {
               y1={
                 pointerStripUptoDataPoint
                   ? pointerYLocal + pointerRadius - 4
-                  : containerHeight - pointerStripHeight
+                  : containerHeightIncludingBelowXAxis - pointerStripHeight
               }
               x2={
                 pointerX +
@@ -86,7 +88,7 @@ export const StripAndLabel = (props: StripAndLabelProps) => {
                 pointerStripWidth / 2 +
                 (pointerItemLocal[0]?.pointerShiftX || 0)
               }
-              y2={Platform.OS === 'web' ? containerHeight + xAxisThickness : containerHeight}
+              y2={containerHeightIncludingBelowXAxis}
             />
             {horizontalStripConfig && (
               <Line
