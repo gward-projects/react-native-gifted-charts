@@ -38,19 +38,25 @@ export const StripAndLabel = (
     const {top, left} = getTopAndLeftForStripAndLabel(props);
     if (isNaN(top)) return null;
 
-    const h =
-        Math.round(
-            (svgHeight ?? 0) ||
-            ((containerHeight ?? 0) + (xAxisThickness ?? 0))
-        );
-
-    // 2) demi-pixel pour les épaisseurs impaires + nudge fin vers le BAS
     const isWeb = Platform.OS === 'web';
-    const halfPixelFix = isWeb && (pointerStripWidth % 2 === 1) ? 0.5 : 0;
-    const nudgeDown = 0.8; // ajuste 0.5–1.2 selon rendu
 
-    // 3) bottomY cohérent avec h
-    const bottomY = h - pointerStripWidth / 2 - halfPixelFix + nudgeDown;
+// Use chart height (container + axis) on Web to avoid including the extra
+// bottom padding (svgHeight). Keep svgHeight on native (Android/iOS).
+    const h =
+        isWeb
+            ? (containerHeight ?? 0) + (xAxisThickness ?? 0)
+            : Math.round(
+                (svgHeight ?? 0) ||
+                ((containerHeight ?? 0) + (xAxisThickness ?? 0))
+            );
+
+    // Half-pixel snap for odd stroke widths (prevents 0.5px bleed on Web)
+    const halfPixelFix = isWeb && (pointerStripWidth % 2 === 1) ? 0.5 : 0;
+
+    // Final Y of the strip: stop exactly on the axis line
+    const bottomY = h - (pointerStripWidth / 2) - halfPixelFix;
+
+    // Start Y when not “upto data point”
     const y1Base = Math.max(0, bottomY - (pointerStripHeight ?? 0));
 
     return (
