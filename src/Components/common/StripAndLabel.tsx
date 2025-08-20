@@ -38,29 +38,34 @@ export const StripAndLabel = (
     const {top, left} = getTopAndLeftForStripAndLabel(props);
     if (isNaN(top)) return null;
 
-
     const isWeb = Platform.OS === 'web';
-    const chartH = (containerHeight ?? 0);
-    const axisH  = (xAxisThickness ?? 0);
+    const chartH = containerHeight ?? 0;
+    const axisH = xAxisThickness ?? 0;
 
-    // Hauteur svg
+    // Hauteur du SVG
     const h = isWeb ? chartH + axisH
         : Math.round((svgHeight ?? 0) || (chartH + axisH));
 
-    // Helpers de snap (netteté) :
+    // Snaps demi-pixel uniquement pour netteté
     const isOdd = (n: number) => Math.round(n) % 2 === 1;
     const snapY = (y: number, strokeW: number) =>
         isWeb && isOdd(strokeW) ? y - 0.5 : y;
     const snapX = (x: number, strokeW: number) =>
         isWeb && isOdd(strokeW) ? x - 0.5 : x;
 
-    // Centre EXACT de l’axe X (aligne-toi sur la parité de l’axe, pas de la barre)
-    const axisCenterY = snapY(chartH + axisH / 2, axisH);
+    // --- Cible Web : bas du RECT de l'axe (pas le centre)
+    const axisBottomWeb = snapY(chartH + axisH, axisH);
+
+    // --- Cible Native : centre de l’axe à partir du bas du SVG (gère le padding d’Android)
+    const axisCenterNative = snapY(h - axisH / 2, axisH);
+
+    // Choix final
+    const y2 = isWeb ? axisBottomWeb : axisCenterNative;
 
     // Départ si pas "upto datapoint"
-    const y1Base = Math.max(0, axisCenterY - (pointerStripHeight ?? 0));
+    const y1Base = Math.max(0, y2 - (pointerStripHeight ?? 0));
 
-    // X de la barre (snap pour netteté selon la parité de la barre)
+    // X (net)
     const lineX = snapX(
         pointerX + pointerRadius + 2 + (pointerItemLocal[0]?.pointerShiftX || 0),
         pointerStripWidth
@@ -87,7 +92,7 @@ export const StripAndLabel = (
                             x1={lineX}
                             y1={pointerStripUptoDataPoint ? pointerYLocal + pointerRadius - 4 : y1Base}
                             x2={lineX}
-                            y2={axisCenterY}
+                            y2={y2}
                             strokeLinecap="butt"
                         />
                         {horizontalStripConfig && (
