@@ -40,7 +40,12 @@ export const StripAndLabel = (props: StripAndLabelProps & {svgHeight: number}) =
 
   if (isNaN(top) || typeof top !== 'number') return null;
 
-  const bottomY = (svgHeight ?? containerHeight) - (pointerStripWidth / 2);
+  const isWeb = Platform.OS === 'web';
+  const halfPixelFix = isWeb && (pointerStripWidth % 2 === 1) ? 0.5 : 0;
+
+  const bottomY =
+      (svgHeight ?? containerHeight) - (pointerStripWidth / 2) - halfPixelFix;
+  const y1Base = Math.max(0, bottomY - pointerStripHeight);
 
   return (
     <View
@@ -78,7 +83,7 @@ export const StripAndLabel = (props: StripAndLabelProps & {svgHeight: number}) =
                 pointerStripWidth / 2 +
                 (pointerItemLocal[0]?.pointerShiftX || 0)
               }
-              y1={ pointerStripUptoDataPoint ? (pointerYLocal + pointerRadius - 4) : Math.max(0, bottomY - pointerStripHeight) }
+              y1={ pointerStripUptoDataPoint ? (pointerYLocal + pointerRadius - 4) : y1Base }
               x2={
                 pointerX +
                 pointerRadius +
@@ -87,6 +92,7 @@ export const StripAndLabel = (props: StripAndLabelProps & {svgHeight: number}) =
                 (pointerItemLocal[0]?.pointerShiftX || 0)
               }
               y2={bottomY}
+              strokeLinecap="butt"
             />
             {horizontalStripConfig && (
               <Line
@@ -145,7 +151,7 @@ export const StripAndLabel = (props: StripAndLabelProps & {svgHeight: number}) =
               position: 'absolute',
               left: left + pointerX,
               top: top,
-              marginTop: pointerStripUptoDataPoint ? 0 : Math.max(0, bottomY - pointerStripHeight),
+              marginTop: pointerStripUptoDataPoint ? 0 : y1Base,
               width: pointerLabelWidth,
             },
           ]}>
