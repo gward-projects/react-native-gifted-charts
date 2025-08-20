@@ -46,11 +46,6 @@ export const StripAndLabel = (props: StripAndLabelProps & { svgHeight: number })
     const chartH = (containerHeight ?? 0);
     const axisH = (xAxisThickness ?? 0);
 
-    // IMPORTANT: fige h et width sur la grille aussi
-    const drawHeight = isWeb
-        ? snapGrid(chartH + axisH)  // snap aussi la hauteur sur la grille DPR
-        : Math.round((svgHeight ?? 0) || (chartH + axisH));
-
     // ---- Offsets: on fige UNE FOIS, puis on réutilise exactement la même valeur
     const outerTop = snapGrid(pointerYLocal);
     const innerTop = -outerTop;
@@ -64,13 +59,19 @@ export const StripAndLabel = (props: StripAndLabelProps & { svgHeight: number })
     // Nudge Web: demi-pixel si épaisseur impaire (axe + barre) + 1px (rect de l’axe)
     const isOdd = (n: number) => Math.round(n) % 2 === 1;
     //@ts-ignore
-    const extraWebOffset = pointerConfig?.extraWebOffset ?? 1;
+    const extraWebOffset = isWeb ? (pointerConfig?.extraWebOffset ?? 1) : 0;
     const webNudge = isWeb
         ? (isOdd(axisH) ? 0.5 : 0) + (isOdd(pointerStripWidth) ? 0.5 : 0) + extraWebOffset
         : 0;
+
+    // IMPORTANT: on agrandit la hauteur du SVG de l’offset Web (sinon la barre est clipée)
+    const drawHeight = isWeb
+        ? snapGrid(chartH + axisH + extraWebOffset)
+        : Math.round((svgHeight ?? 0) || (chartH + axisH));
+
     // Web: bas du rect de l’axe + nudge ; Native: centre depuis le bas
     const y2 = isWeb
-       ? snapGrid(chartH + axisH + webNudge)
+        ? snapGrid(chartH + axisH + extraWebOffset)
         : snapGrid(drawHeight - axisH / 2);
 
     // Départ si pas "upto datapoint"
@@ -80,7 +81,7 @@ export const StripAndLabel = (props: StripAndLabelProps & { svgHeight: number })
     const commonProps = {vectorEffect: 'non-scaling-stroke' as const};
 
     return (
-        <View style={{ position: 'absolute', top: outerTop }}>
+        <View style={{position: 'absolute', top: outerTop}}>
             {(isBarChart ? showPointerStrip && !pointerLabelComponent : showPointerStrip) ? (
                 <View
                     style={{
@@ -89,6 +90,7 @@ export const StripAndLabel = (props: StripAndLabelProps & { svgHeight: number })
                         top: containsNegative ? 0 : innerTop,     // <= plus jamais -pointerYLocal direct
                         width,
                         height: drawHeight,
+                        overflow: 'visible',
                     }}
                 >
                     <Svg height={drawHeight} width={width}>
