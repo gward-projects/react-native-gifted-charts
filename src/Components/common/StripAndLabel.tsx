@@ -48,7 +48,7 @@ export const StripAndLabel = (props: StripAndLabelProps & { svgHeight: number })
 
     // IMPORTANT: fige h et width sur la grille aussi
     const drawHeight = isWeb
-        ? Math.round(chartH + axisH)
+        ? snapGrid(chartH + axisH)  // snap aussi la hauteur sur la grille DPR
         : Math.round((svgHeight ?? 0) || (chartH + axisH));
 
     // ---- Offsets: on fige UNE FOIS, puis on réutilise exactement la même valeur
@@ -61,7 +61,17 @@ export const StripAndLabel = (props: StripAndLabelProps & { svgHeight: number })
     );
 
     // Si l’axe est un RECT (Web) vise son bas; sinon vise le centre depuis le bas du SVG (Native)
-    const y2 = isWeb ? snapGrid(chartH + axisH) : snapGrid(drawHeight - axisH / 2);
+    // Nudge Web: demi-pixel si épaisseur impaire (axe + barre) + 1px (rect de l’axe)
+    const isOdd = (n: number) => Math.round(n) % 2 === 1;
+    //@ts-ignore
+    const extraWebOffset = pointerConfig?.extraWebOffset ?? 1;
+    const webNudge = isWeb
+        ? (isOdd(axisH) ? 0.5 : 0) + (isOdd(pointerStripWidth) ? 0.5 : 0) + extraWebOffset
+        : 0;
+    // Web: bas du rect de l’axe + nudge ; Native: centre depuis le bas
+    const y2 = isWeb
+       ? snapGrid(chartH + axisH + webNudge)
+        : snapGrid(drawHeight - axisH / 2);
 
     // Départ si pas "upto datapoint"
     const y1Base = Math.max(0, y2 - (pointerStripHeight ?? 0));
