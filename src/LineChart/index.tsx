@@ -8,6 +8,7 @@ import {
   ColorValue,
   I18nManager,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import {screenWidth, usePrevious} from '../utils';
 import Svg, {
@@ -1697,6 +1698,10 @@ export const LineChart = (props: LineChartPropsType) => {
         ) -
         (pointerRadius || pointerWidth / 2) -
         1;
+      // Web : getX() inclut déjà initialSpacing alors que l’overlay n’a pas le même repère → on normalise
+      if (Platform.OS === 'web') {
+        z -= initialSpacing;
+      }
       setPointerX(Math.max(0.1, z)); // 0.1 is to avoid pointer going out of the chart, See https://github.com/Abhinandan-Kushwaha/react-native-gifted-charts/issues/925
       setPointerIndex(factor);
       y =
