@@ -38,26 +38,26 @@ export const StripAndLabel = (
     const {top, left} = getTopAndLeftForStripAndLabel(props);
     if (isNaN(top)) return null;
 
+
+    // Use chart height (container + axis) on Web to avoid including the extra
+    // bottom padding (svgHeight). Keep svgHeight on native (Android/iOS).
     const isWeb = Platform.OS === 'web';
+    const chartH = (containerHeight ?? 0);
+    const axisH = (xAxisThickness ?? 0);
 
-// Use chart height (container + axis) on Web to avoid including the extra
-// bottom padding (svgHeight). Keep svgHeight on native (Android/iOS).
-    const h =
-        isWeb
-            ? (containerHeight ?? 0) + (xAxisThickness ?? 0)
-            : Math.round(
-                (svgHeight ?? 0) ||
-                ((containerHeight ?? 0) + (xAxisThickness ?? 0))
-            );
+    // Hauteur du SVG : zone chart + axe
+    const h = isWeb
+        ? chartH + axisH
+        : Math.round((svgHeight ?? 0) || (chartH + axisH));
 
-    // Half-pixel snap for odd stroke widths (prevents 0.5px bleed on Web)
+    // Snap demi-pixel pour les largeurs impaires (Web)
     const halfPixelFix = isWeb && (pointerStripWidth % 2 === 1) ? 0.5 : 0;
 
-    // Final Y of the strip: stop exactly on the axis line
-    const bottomY = h - (pointerStripWidth / 2) - halfPixelFix;
+    // Y exact de l’axe: bord supérieur du SVG + hauteur chart + moitié de l’axe
+    const axisY = chartH + axisH / 2 - halfPixelFix;
 
-    // Start Y when not “upto data point”
-    const y1Base = Math.max(0, bottomY - (pointerStripHeight ?? 0));
+    // Départ si pas "upto datapoint"
+    const y1Base = Math.max(0, axisY - (pointerStripHeight ?? 0));
 
     return (
         <View style={{position: 'absolute', top: pointerYLocal}}>
@@ -66,7 +66,7 @@ export const StripAndLabel = (
                     style={{
                         position: 'absolute',
                         left: -pointerStripWidth / 4,
-                        top: containsNegative ? 0 : -pointerYLocal + xAxisThickness,
+                        top: containsNegative ? 0 : -pointerYLocal,
                         width,
                         height: h, // <= identique au SVG juste dessous
                     }}
@@ -90,7 +90,7 @@ export const StripAndLabel = (
                                 pointerX + pointerRadius + 2 - pointerStripWidth / 2 +
                                 (pointerItemLocal[0]?.pointerShiftX || 0)
                             }
-                            y2={bottomY}
+                            y2={axisY}
                             strokeLinecap="butt"
                         />
                         {horizontalStripConfig && (
