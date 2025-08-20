@@ -53,8 +53,9 @@ export const StripAndLabel = (
     // Snap demi-pixel pour les largeurs impaires (Web)
     const halfPixelFix = isWeb && (pointerStripWidth % 2 === 1) ? 0.5 : 0;
 
-    // Y exact de l’axe: bord supérieur du SVG + hauteur chart + moitié de l’axe
-    const axisY = chartH + axisH / 2 - halfPixelFix;
+    // Y exact de l’axe: bas du SVG - moitié de l’axe
+    // (robuste: marche si svgHeight a du padding sur Android)
+    const axisY = h - axisH / 2 - halfPixelFix;
 
     // Départ si pas "upto datapoint"
     const y1Base = Math.max(0, axisY - (pointerStripHeight ?? 0));
