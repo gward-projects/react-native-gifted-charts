@@ -40,18 +40,15 @@ export const StripAndLabel = (props: StripAndLabelProps & {svgHeight: number}) =
 
   if (isNaN(top)) return null;
 
-  // 1) calcule une hauteur entière
-  const baseHeight = Math.floor(svgHeight ?? containerHeight);
+  const drawHeight = (containerHeight ?? 0) + (xAxisThickness ?? 0);
 
-// 2) demi-pixel fix + léger nudge web
+// web half-pixel snap (odd stroke widths can render 0.5px off)
   const isWeb = Platform.OS === 'web';
   const halfPixelFix = isWeb && (pointerStripWidth % 2 === 1) ? 0.5 : 0;
 
-// <- remplace bottomY par ceci
-  const bottomY = baseHeight - (pointerStripWidth / 2) - halfPixelFix - (isWeb ? 0.5 : 0);
-
-// idem pour le label (cohérent avec y1Base)
-  const y1Base = Math.max(0, bottomY - pointerStripHeight);
+// stop exactly on the axis line
+  const bottomY = drawHeight - (pointerStripWidth / 2) - halfPixelFix;
+  const y1Base  = Math.max(0, bottomY - (pointerStripHeight ?? 0));
 
   return (
     <View
@@ -71,7 +68,7 @@ export const StripAndLabel = (props: StripAndLabelProps & {svgHeight: number}) =
             top: containsNegative ? 0 : -pointerYLocal + xAxisThickness,
             width,
             // hauteur identique à la zone SVG (inclut la zone sous l’axe X)
-            height: svgHeight,
+            height: drawHeight,
           }}>
           <Svg height={svgHeight} width={width}>
             <Line
