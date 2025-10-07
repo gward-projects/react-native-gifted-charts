@@ -737,7 +737,7 @@ export const LineChart = (props: LineChartPropsType) => {
                   x={initialSpacing + (spacing * index - spacing / 2)}
                   y={8}
                   width={spacing}
-                  height={containerHeight - 0}
+                  height={containerHeight}
                   fill={'none'}
                   onPressIn={evt => {
                     const locationY = evt.nativeEvent.locationY; // Note that we have another property named pageY which can be useful
@@ -1839,12 +1839,28 @@ export const LineChart = (props: LineChartPropsType) => {
         key={key ?? 0}
         onPointerEnter={() => pointerConfig?.onPointerEnter?.()}
         onPointerLeave={() => pointerConfig?.onPointerLeave?.()}
-        onTouchStart={() => pointerConfig?.onTouchStart?.()}
+        onTouchStart={evt => {
+            // mémorise l’instant du touch
+            setResponderStartTime(evt.timeStamp);
+            pointerConfig?.onTouchStart?.();
+        }}
         onTouchEnd={() => pointerConfig?.onTouchEnd?.()}
-        onMoveShouldSetResponder={evt => (pointerConfig ? true : false)}
-        onStartShouldSetResponder={evt =>
-          pointerConfig && activatePointersInstantlyOnTouch ? true : false
-        }
+        onMoveShouldSetResponder={evt => {
+               if (!pointerConfig) return false;
+               // En mode long-press, n'accroche qu'après le délai
+                   if (activatePointersOnLongPress) {
+                     return evt.timeStamp - responderStartTime >= activatePointersDelay;
+                   }
+               // Sinon (tap/drag immédiat) on peut accrocher
+                   return true;
+             }}
+        onStartShouldSetResponder={evt => {
+               if (!pointerConfig) return false;
+               // En long-press, on n'accroche pas au démarrage
+                  if (activatePointersOnLongPress) return false;
+               // Mode "instant" uniquement si explicitement demandé
+                  return !!activatePointersInstantlyOnTouch;
+             }}
         onResponderGrant={evt => {
           if (!pointerConfig) return;
           setResponderStartTime(evt.timeStamp);
@@ -1982,10 +1998,22 @@ export const LineChart = (props: LineChartPropsType) => {
         key={key ?? 0}
         onPointerEnter={() => pointerConfig?.onPointerEnter?.()}
         onPointerLeave={() => pointerConfig?.onPointerLeave?.()}
-        onMoveShouldSetResponder={evt => (pointerConfig ? true : false)}
-        onStartShouldSetResponder={evt =>
-          pointerConfig && activatePointersInstantlyOnTouch ? true : false
-        }
+        onMoveShouldSetResponder={evt => {
+               if (!pointerConfig) return false;
+               // En mode long-press, n'accroche qu'après le délai
+                   if (activatePointersOnLongPress) {
+                     return evt.timeStamp - responderStartTime >= activatePointersDelay;
+                   }
+               // Sinon (tap/drag immédiat) on peut accrocher
+                   return true;
+             }}
+        onStartShouldSetResponder={evt => {
+            if (!pointerConfig) return false;
+            // En long-press, on n'accroche pas au démarrage
+            if (activatePointersOnLongPress) return false;
+            // Mode "instant" uniquement si explicitement demandé
+            return !!activatePointersInstantlyOnTouch;
+        }}
         onResponderGrant={evt => {
           if (!pointerConfig) return;
           setResponderStartTime(evt.timeStamp);
